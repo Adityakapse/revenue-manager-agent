@@ -1,0 +1,23 @@
+# Secrets — NEVER commit real keys or connection strings
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+
+# Playwright
+playwright-report/
+.cache/
+
+# Deep Agents virtual filesystem scratch (runtime state)
+agent_fs/
+
+# OS
+.DS_Store

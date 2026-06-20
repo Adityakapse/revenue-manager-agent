@@ -1,0 +1,11 @@
+# Lean runtime deps for the DEPLOYED agent service (no Playwright/Chromium —
+# the ETL runs separately to load the DB; the server only reads it).
+# Use this for Render/Railway:  pip install -r requirements-server.txt
+
+deepagents
+langchain-google-genai      # provider: Gemini (LLM_PROVIDER=google). Swap for langchain-groq if using Groq.
+langgraph
+fastapi
+uvicorn[standard]
+psycopg[binary]
+python-dotenv

@@ -1,0 +1,11 @@
+[project]
+name = "revenue-manager-agent"
+version = "0.1.0"
+description = "Revenue Manager Agent — OTEL build challenge solution (ETL + tools + Deep Agent)"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+# Put the repo root on sys.path so `import tools` / `import etl` work in tests.
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

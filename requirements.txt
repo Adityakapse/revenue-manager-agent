@@ -1,0 +1,20 @@
+# Requires Python >= 3.11 (deepagents). We build the venv with python3.12.
+
+# ---- Phase 1: ETL (scrape -> transform -> load) ----
+playwright==1.49.0          # drive a real browser to scrape the client-rendered data site
+psycopg[binary]==3.2.3      # talk to Postgres from Python
+python-dotenv==1.0.1        # load DATABASE_URL / GROQ_API_KEY from .env
+
+# ---- Phase 2-3: tool layer + Deep Agents agent ----
+deepagents                  # the required agent harness (planning, skills, subagents, HITL, memory)
+langchain-groq              # LLM provider option 1 (Groq) — free tier ~12K TPM (tight for deep agents)
+langchain-google-genai      # LLM provider option 2 (Google Gemini) — generous free TPM (recommended)
+langgraph                   # Deep Agents runs on LangGraph
+langgraph-checkpoint-postgres  # durable checkpointer -> multi-turn memory + HITL
+
+# ---- Phase 4: serving the agent + /health ----
+fastapi
+uvicorn
+
+# ---- Testing (all phases) ----
+pytest==8.3.4
