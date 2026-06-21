@@ -2,7 +2,7 @@
 Deep Agent wiring for the Revenue Manager.
 
 A single create_deep_agent(...) call assembled from deliberate building blocks:
-  - model        : Groq (free) chat model
+  - model        : chat model (Gemini or Groq, selected by LLM_PROVIDER)
   - tools        : the five tested metric tools (no run_sql)
   - skills       : the on-demand revenue-manager playbook (progressive disclosure)
   - subagents    : a focused segment/concentration analyst (context isolation)
