@@ -20,8 +20,11 @@ from agent.graph import HUMAN_GATED_TOOLS, build_agent, segment_subagent  # noqa
 from tools.metrics import ALL_TOOLS  # noqa: E402
 
 REQUIRED_TOOLS = {
-    "get_otb_summary", "get_segment_mix", "get_pickup_delta",
-    "get_as_of_otb", "get_block_vs_transient_mix",
+    "get_otb_summary",
+    "get_segment_mix",
+    "get_pickup_delta",
+    "get_as_of_otb",
+    "get_block_vs_transient_mix",
 }
 
 
@@ -46,7 +49,7 @@ def test_fixed_tool_surface():
 
 # --- Scenario 2: get_as_of_otb is human-gated (HITL) ---------------------- #
 def test_as_of_is_human_gated(agent):
-    assert "get_as_of_otb" in HUMAN_GATED_TOOLS               # the interrupt target
+    assert "get_as_of_otb" in HUMAN_GATED_TOOLS  # the interrupt target
     assert any("HumanInTheLoop" in n for n in node_names(agent))  # HITL middleware wired
 
 
@@ -56,7 +59,7 @@ def test_segment_work_isolated():
     assert sa["name"] == "segment-analyst"
     tool_names = {t.__name__ for t in sa["tools"]}
     assert tool_names == {"get_segment_mix", "get_block_vs_transient_mix"}
-    assert "get_as_of_otb" not in tool_names                  # isolation: no broad tool access
+    assert "get_as_of_otb" not in tool_names  # isolation: no broad tool access
 
 
 # --- Scenario 4: multi-tool decomposition --------------------------------- #
@@ -77,11 +80,19 @@ def test_skills_loaded_on_demand(agent):
 
 # --- Scenario 6: memory / filesystem configured --------------------------- #
 def test_memory_configured(agent):
-    assert agent.checkpointer is not None                    # multi-turn memory + HITL persistence
+    assert agent.checkpointer is not None  # multi-turn memory + HITL persistence
 
 
 # --- Scenario 7 (bonus): refusal policy lives in a skill ------------------ #
 def test_refusal_policy_present():
-    guard = (Path(__file__).resolve().parents[1]
-             / "skills" / "grain-and-filter-guardrails" / "SKILL.md").read_text().lower()
+    guard = (
+        (
+            Path(__file__).resolve().parents[1]
+            / "skills"
+            / "grain-and-filter-guardrails"
+            / "SKILL.md"
+        )
+        .read_text()
+        .lower()
+    )
     assert "refuse" in guard and "provisional" in guard

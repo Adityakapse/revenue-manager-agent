@@ -15,7 +15,7 @@ parameterized and read from the semantic VIEWS, never the raw fact table.
 
 from __future__ import annotations
 
-from datetime import datetime, time, timedelta, timezone
+from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from tools.db import _num, month_bounds, query, query_one
@@ -104,15 +104,17 @@ def get_segment_mix(stay_month: str, macro_group: str | None = None) -> dict:
     segments = []
     for r in rows:
         rn, rev = int(r["room_nights"]), _num(r["total_revenue"])
-        segments.append({
-            "market_code": r["market_code"],
-            "market_name": r["market_name"],
-            "macro_group": r["macro_group"],
-            "room_nights": rn,
-            "total_revenue": rev,
-            "share_of_room_nights": (rn / total_rn) if total_rn else 0.0,
-            "share_of_revenue": (rev / total_rev) if total_rev else 0.0,
-        })
+        segments.append(
+            {
+                "market_code": r["market_code"],
+                "market_name": r["market_name"],
+                "macro_group": r["macro_group"],
+                "room_nights": rn,
+                "total_revenue": rev,
+                "share_of_room_nights": (rn / total_rn) if total_rn else 0.0,
+                "share_of_revenue": (rev / total_rev) if total_rev else 0.0,
+            }
+        )
     return {
         "stay_month": stay_month,
         "macro_group": macro_group,
@@ -132,17 +134,17 @@ def get_pickup_delta(booking_window_days: int, future_stay_from: str) -> dict:
     vw_stay_night_base (Posted, non-cancelled).
 
     GRAIN: new_reservations = count(distinct reservation_id) created in the window;
-    new_room_nights = sum(number_of_spaces); new_total_revenue = sum(daily_total_revenue_before_tax).
+    new_room_nights = sum(number_of_spaces); new_total_revenue sums daily_total_revenue_before_tax.
     Returns: booking_window_days, future_stay_from, window_start_utc, window_end_utc,
     new_reservations, new_room_nights, new_total_revenue, by_segment[...].
     """
     # Effective "now" = when the book was captured (latest booking timestamp), so pickup
     # windows stay correct for a static dataset even as wall-clock time drifts past the scrape.
     captured = query_one("select max(create_datetime) as now from public.vw_stay_night_base")
-    now_utc = captured.get("now") or datetime.now(timezone.utc)
+    now_utc = captured.get("now") or datetime.now(UTC)
     today_london = now_utc.astimezone(LONDON).date()
     start_date = today_london - timedelta(days=booking_window_days)
-    window_start = datetime.combine(start_date, time.min, tzinfo=LONDON).astimezone(timezone.utc)
+    window_start = datetime.combine(start_date, time.min, tzinfo=LONDON).astimezone(UTC)
     params = {"win_start": window_start, "win_end": now_utc, "future_from": future_stay_from}
 
     totals = query_one(
@@ -201,7 +203,7 @@ def get_as_of_otb(stay_month: str, as_of_utc: str) -> dict:
 
     Includes a stay row when ALL hold:
       - create_datetime <= as_of_utc                                  (already booked then)
-      - reservation_status <> 'Cancelled' OR cancellation_datetime > as_of_utc  (not yet cancelled then)
+      - reservation_status <> 'Cancelled' OR cancellation_datetime > as_of_utc (not yet cancelled)
       - financial_status = 'Posted'                                   (provisional excluded)
 
     This is an EXPENSIVE point-in-time rebuild; the agent gates it behind human approval.
@@ -286,8 +288,7 @@ def get_block_vs_transient_mix(stay_month: str) -> dict:
         params,
     )
     top_companies = [
-        {"company_name": r["company"], "total_revenue": _num(r["total_revenue"])}
-        for r in companies
+        {"company_name": r["company"], "total_revenue": _num(r["total_revenue"])} for r in companies
     ]
     top3_rev = sum(c["total_revenue"] for c in top_companies)
     return {

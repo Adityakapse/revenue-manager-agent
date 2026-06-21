@@ -15,8 +15,11 @@ import yaml
 
 SKILLS_DIR = Path(__file__).resolve().parents[1] / "skills"
 TOOL_NAMES = {
-    "get_otb_summary", "get_segment_mix", "get_pickup_delta",
-    "get_as_of_otb", "get_block_vs_transient_mix",
+    "get_otb_summary",
+    "get_segment_mix",
+    "get_pickup_delta",
+    "get_as_of_otb",
+    "get_block_vs_transient_mix",
 }
 
 # A numeric threshold like "35%", ">= 0.4", "1.2x", "~30".
@@ -85,8 +88,8 @@ def test_distinct_routing_and_coverage():
         fm, _, _ = parse(f)
         names.append(fm["name"])
         descs.append(re.sub(r"\s+", " ", fm["description"]).strip())
-    assert len(names) == len(set(names))                 # distinct names
-    assert len(descs) == len(set(descs))                 # distinct descriptions
+    assert len(names) == len(set(names))  # distinct names
+    assert len(descs) == len(set(descs))  # distinct descriptions
     assert any("pickup" in n or "pace" in n for n in names)
     assert any("segment" in n or "mix" in n for n in names)
     assert any("otb" in n for n in names)

@@ -18,9 +18,9 @@ etl/        scrape.py · transform.py · load.py · run_etl.py  (+ SCRAPE_MANIFE
 sql/        views.sql  (vw_stay_night_base, vw_stay_night_posted, vw_segment_stay_night)
 tools/      db.py · metrics.py (5 tools) · METRIC_DEFINITIONS.md
 skills/     CHALLENGE_SKILL.md (otel-rm-v2) + 7 SKILL.md (3 judgment)
-agent/      graph.py (create_deep_agent) · prompts.py · server.py (FastAPI)
+agent/      graph.py (create_deep_agent) · prompts.py · server.py (FastAPI) · index.html (UI)
 tests/      test_etl.py(4) · test_tools.py(12) · test_skills.py(7) · test_agent.py(7) = 30
-scripts/    compute_load_fingerprint.py · smoke_agent.py
+scripts/    compute_load_fingerprint.py · load_neon_http.py · smoke_agent.py
 ```
 
 ## Run it locally

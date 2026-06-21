@@ -59,7 +59,9 @@ def build_system_prompt() -> str:
     if not anchor:
         return RM_PERSONA
     year, month = anchor[:4], anchor[5:7]
-    return RM_PERSONA + f"""
+    return (
+        RM_PERSONA
+        + f"""
 
 DATE CONTEXT (read before choosing any stay_month):
 - TODAY for this hotel's book is {anchor}. Treat {anchor} as "today" / "now".
@@ -71,6 +73,7 @@ DATE CONTEXT (read before choosing any stay_month):
 - If a tool returns zero/empty, you almost certainly picked a period with no business (usually the
   wrong month). Re-check the month against {anchor} and retry before raising any alarm — an empty
   result is NOT evidence of a system fault."""
+    )
 
 
 def default_model():

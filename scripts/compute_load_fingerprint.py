@@ -18,12 +18,10 @@ import hashlib
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
-DEFAULT_DATABASE_URL = (
-    "postgresql://hackathon:hackathon@localhost:5432/hotel_hackathon"
-)
+DEFAULT_DATABASE_URL = "postgresql://hackathon:hackathon@localhost:5432/hotel_hackathon"
 
 TABLES = [
     "reservations_hackathon",
@@ -40,9 +38,7 @@ def connect(database_url: str):
     try:
         import psycopg
     except ImportError as exc:
-        raise SystemExit(
-            "psycopg is required: pip install 'psycopg[binary]'"
-        ) from exc
+        raise SystemExit("psycopg is required: pip install 'psycopg[binary]'") from exc
 
     return psycopg.connect(database_url)
 
@@ -159,9 +155,7 @@ def fetch_aggregates(conn) -> dict[str, Any]:
             """
         )
         july_total_revenue_row = cur.fetchone()
-        july_total_revenue = (
-            float(july_total_revenue_row[0]) if july_total_revenue_row else 0.0
-        )
+        july_total_revenue = float(july_total_revenue_row[0]) if july_total_revenue_row else 0.0
 
         cur.execute(
             """
@@ -227,9 +221,7 @@ def validate_manifest(
 
     errors: list[str] = []
     if manifest_count != db_count:
-        errors.append(
-            f"reservation_ids_count mismatch: manifest={manifest_count} db={db_count}"
-        )
+        errors.append(f"reservation_ids_count mismatch: manifest={manifest_count} db={db_count}")
     if manifest_hash and manifest_hash != db_hash:
         errors.append("reservation_ids_sha256 does not match database")
 
@@ -260,7 +252,7 @@ def build_fingerprint(
 
     result: dict[str, Any] = {
         "version": 2,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "command": command,
         "database_url_redacted": redact_database_url(database_url),
         "row_counts": row_counts,

@@ -22,23 +22,23 @@ from tools.metrics import (
     get_segment_mix,
 )
 
-OTB_MONTH = "2026-09"   # busiest month
-SEG_MONTH = "2026-08"   # has OTA + a Retail macro group
+OTB_MONTH = "2026-09"  # busiest month
+SEG_MONTH = "2026-08"  # has OTA + a Retail macro group
 
 
 # --- Scenario 1: grain inequality ----------------------------------------- #
 def test_grain_inequalities():
     s = get_otb_summary(OTB_MONTH)
-    assert s["reservation_count"] < s["row_count"]        # multi-night bookings -> more rows
-    assert s["room_nights"] >= s["reservation_count"]     # >= 1 room night per reservation
-    assert s["room_revenue"] <= s["total_revenue"]        # total includes non-room components
+    assert s["reservation_count"] < s["row_count"]  # multi-night bookings -> more rows
+    assert s["room_nights"] >= s["reservation_count"]  # >= 1 room night per reservation
+    assert s["room_revenue"] <= s["total_revenue"]  # total includes non-room components
 
 
 # --- Scenario 2: cancellation filter changes counts ----------------------- #
 def test_cancellation_filter_changes_counts():
     excl = get_otb_summary(OTB_MONTH, exclude_cancelled=True)
     incl = get_otb_summary(OTB_MONTH, exclude_cancelled=False)
-    assert excl["row_count"] < incl["row_count"]          # month has cancelled stay rows
+    assert excl["row_count"] < incl["row_count"]  # month has cancelled stay rows
     assert excl["reservation_count"] <= incl["reservation_count"]
 
 
@@ -109,7 +109,7 @@ def test_provisional_excluded_from_default_otb(conn):
             (lo, lo),
         )
         only_cancelled_excluded = cur.fetchone()[0]
-    default_otb = get_otb_summary(month)["row_count"]   # also excludes provisional
+    default_otb = get_otb_summary(month)["row_count"]  # also excludes provisional
     assert default_otb < only_cancelled_excluded
 
 
@@ -123,8 +123,8 @@ def test_as_of_differs_from_current():
     current = get_otb_summary(OTB_MONTH)["row_count"]
     early = get_as_of_otb(OTB_MONTH, "2026-01-01T00:00:00Z")["row_count"]
     future = get_as_of_otb(OTB_MONTH, "2030-01-01T00:00:00Z")["row_count"]
-    assert early < current               # bookings created after as_of are excluded
-    assert future == current             # far-future as_of == current posted/non-cancelled OTB
+    assert early < current  # bookings created after as_of are excluded
+    assert future == current  # far-future as_of == current posted/non-cancelled OTB
 
 
 # --- Scenario 10: property_date vs stay_date ------------------------------ #
@@ -162,7 +162,9 @@ def test_tools_isolated_and_documented():
         assert not (forbidden & set(sig.parameters)), f"{tool.__name__} exposes raw SQL param"
         # Every parameter is a simple typed scalar (str/int/bool), never an SQL blob.
         for p in sig.parameters.values():
-            assert p.annotation in (str, int, bool, "str | None", "str", "int", "bool") \
+            assert (
+                p.annotation in (str, int, bool, "str | None", "str", "int", "bool")
                 or p.annotation is inspect.Parameter.empty
+            )
         # Each docstring states the grain.
         assert "grain" in (tool.__doc__ or "").lower()

@@ -2,10 +2,19 @@
 name = "revenue-manager-agent"
 version = "0.1.0"
 description = "Revenue Manager Agent — OTEL build challenge solution (ETL + tools + Deep Agent)"
-requires-python = ">=3.10"
+requires-python = ">=3.11"  # Deep Agents requires Python 3.11+
 
 [tool.pytest.ini_options]
 # Put the repo root on sys.path so `import tools` / `import etl` work in tests.
 pythonpath = ["."]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [".venv"]
+
+[tool.ruff.lint]
+# pycodestyle errors, pyflakes, import sorting, pyupgrade.
+select = ["E", "F", "I", "UP"]

@@ -15,7 +15,7 @@ import hashlib
 import json
 import os
 import urllib.request
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
 from urllib.parse import urlparse
@@ -41,7 +41,9 @@ def _default(o):
 def run(sql: str, params: list | None = None) -> list[dict]:
     body = json.dumps({"query": sql, "params": params or []}, default=_default).encode()
     req = urllib.request.Request(
-        f"https://{HOST}/sql", method="POST", data=body,
+        f"https://{HOST}/sql",
+        method="POST",
+        data=body,
         headers={"Content-Type": "application/json", "Neon-Connection-String": CONN},
     )
     with urllib.request.urlopen(req, timeout=120) as r:
@@ -50,7 +52,7 @@ def run(sql: str, params: list | None = None) -> list[dict]:
 
 def insert(table: str, columns: list[str], rows: list[dict], chunk: int = 100) -> None:
     for start in range(0, len(rows), chunk):
-        batch = rows[start:start + chunk]
+        batch = rows[start : start + chunk]
         n = len(columns)
         values, params = [], []
         for i, row in enumerate(batch):
@@ -80,11 +82,29 @@ def main() -> None:
     run("""truncate table public.reservations_hackathon, public.market_macro_group_history,
            public.room_type_lookup, public.rate_plan_lookup, public.market_code_lookup,
            public.channel_code_lookup, public.load_manifest restart identity cascade""")
-    insert("room_type_lookup", ["space_type", "room_class", "display_name", "number_of_rooms"], ref["room_types"])
-    insert("rate_plan_lookup", ["rate_plan_code", "plan_family", "is_commissionable"], ref["rate_plans"])
-    insert("market_code_lookup", ["market_code", "market_name", "macro_group", "description"], ref["markets"])
-    insert("channel_code_lookup", ["channel_code", "channel_name", "channel_group"], ref["channels"])
-    insert("market_macro_group_history", ["market_code", "valid_from", "valid_to", "macro_group"], ref["macro_history"])
+    insert(
+        "room_type_lookup",
+        ["space_type", "room_class", "display_name", "number_of_rooms"],
+        ref["room_types"],
+    )
+    insert(
+        "rate_plan_lookup",
+        ["rate_plan_code", "plan_family", "is_commissionable"],
+        ref["rate_plans"],
+    )
+    insert(
+        "market_code_lookup",
+        ["market_code", "market_name", "macro_group", "description"],
+        ref["markets"],
+    )
+    insert(
+        "channel_code_lookup", ["channel_code", "channel_name", "channel_group"], ref["channels"]
+    )
+    insert(
+        "market_macro_group_history",
+        ["market_code", "valid_from", "valid_to", "macro_group"],
+        ref["macro_history"],
+    )
     insert("reservations_hackathon", _FACT_COLUMNS, t["fact_rows"])
 
     # 4) fingerprint (must match LOAD_PROOF) + manifest row
@@ -94,11 +114,15 @@ def main() -> None:
     pair = hashlib.sha256(
         "\n".join(f"{r['reservation_id']}|{r['sd']}|{r['fs']}" for r in rows).encode()
     ).hexdigest()
-    run("insert into public.load_manifest (dataset_revision, scraped_at, source_url, row_hash) "
+    run(
+        "insert into public.load_manifest (dataset_revision, scraped_at, source_url, row_hash) "
         "values ($1,$2,$3,$4)",
-        [scraped["dataset_revision"], datetime.now(timezone.utc).isoformat(), f"{BASE}/reservations", pair])
+        [scraped["dataset_revision"], datetime.now(UTC).isoformat(), f"{BASE}/reservations", pair],
+    )
 
-    counts = run("select count(*) c, count(distinct reservation_id) r from public.reservations_hackathon")[0]
+    counts = run(
+        "select count(*) c, count(distinct reservation_id) r from public.reservations_hackathon"
+    )[0]
     proof = json.loads((ROOT / "etl/LOAD_PROOF.json").read_text())
     print(f"  loaded {counts['c']} rows / {counts['r']} reservations")
     print(f"  row_hash: {pair}")

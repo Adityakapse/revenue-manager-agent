@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import psycopg
@@ -33,12 +33,31 @@ restart identity cascade;
 
 # Fact-table columns we insert (reservation_stay_id is GENERATED ALWAYS — never inserted).
 _FACT_COLUMNS = [
-    "reservation_id", "arrival_date", "departure_date", "stay_date", "property_date",
-    "reservation_status", "financial_status", "create_datetime", "cancellation_datetime",
-    "guest_country", "is_block", "is_walk_in", "number_of_spaces", "space_type",
-    "market_code", "channel_code", "source_name", "rate_plan_code",
-    "daily_room_revenue_before_tax", "daily_total_revenue_before_tax", "nights",
-    "adr_room", "lead_time", "company_name", "travel_agent_name",
+    "reservation_id",
+    "arrival_date",
+    "departure_date",
+    "stay_date",
+    "property_date",
+    "reservation_status",
+    "financial_status",
+    "create_datetime",
+    "cancellation_datetime",
+    "guest_country",
+    "is_block",
+    "is_walk_in",
+    "number_of_spaces",
+    "space_type",
+    "market_code",
+    "channel_code",
+    "source_name",
+    "rate_plan_code",
+    "daily_room_revenue_before_tax",
+    "daily_total_revenue_before_tax",
+    "nights",
+    "adr_room",
+    "lead_time",
+    "company_name",
+    "travel_agent_name",
 ]
 
 
@@ -87,7 +106,7 @@ def load_all(
     """Run the full idempotent load. Returns a small summary (counts + row_hash)."""
     ref = transformed["reference"]
     facts = transformed["fact_rows"]
-    scraped_at = scraped_at or datetime.now(timezone.utc)
+    scraped_at = scraped_at or datetime.now(UTC)
 
     with connect(database_url) as conn:
         with conn.cursor() as cur:
@@ -95,21 +114,36 @@ def load_all(
             cur.execute(_TRUNCATE)
 
             # 2) ... load FK parents first ...
-            _insert_many(cur, "room_type_lookup",
-                         ["space_type", "room_class", "display_name", "number_of_rooms"],
-                         ref["room_types"])
-            _insert_many(cur, "rate_plan_lookup",
-                         ["rate_plan_code", "plan_family", "is_commissionable"],
-                         ref["rate_plans"])
-            _insert_many(cur, "market_code_lookup",
-                         ["market_code", "market_name", "macro_group", "description"],
-                         ref["markets"])
-            _insert_many(cur, "channel_code_lookup",
-                         ["channel_code", "channel_name", "channel_group"],
-                         ref["channels"])
-            _insert_many(cur, "market_macro_group_history",
-                         ["market_code", "valid_from", "valid_to", "macro_group"],
-                         ref["macro_history"])
+            _insert_many(
+                cur,
+                "room_type_lookup",
+                ["space_type", "room_class", "display_name", "number_of_rooms"],
+                ref["room_types"],
+            )
+            _insert_many(
+                cur,
+                "rate_plan_lookup",
+                ["rate_plan_code", "plan_family", "is_commissionable"],
+                ref["rate_plans"],
+            )
+            _insert_many(
+                cur,
+                "market_code_lookup",
+                ["market_code", "market_name", "macro_group", "description"],
+                ref["markets"],
+            )
+            _insert_many(
+                cur,
+                "channel_code_lookup",
+                ["channel_code", "channel_name", "channel_group"],
+                ref["channels"],
+            )
+            _insert_many(
+                cur,
+                "market_macro_group_history",
+                ["market_code", "valid_from", "valid_to", "macro_group"],
+                ref["macro_history"],
+            )
 
             # 3) ... then the fact table.
             _insert_many(cur, "reservations_hackathon", _FACT_COLUMNS, facts)

@@ -35,11 +35,26 @@ BASE = "https://otel-hackathon-data-site.vercel.app"
 # The booking-level labels shown in the detail page "RESERVATION FIELDS" block.
 # We read them as alternating label/value text lines, keeping only known labels.
 DETAIL_FIELD_LABELS = {
-    "arrival_date", "departure_date", "nights", "reservation_status",
-    "create_datetime", "cancellation_datetime", "guest_country", "is_block",
-    "is_walk_in", "number_of_spaces", "space_type", "market_code", "channel_code",
-    "source_name", "rate_plan_code", "commercial_rate_code", "adr_room",
-    "lead_time", "company_name", "travel_agent_name",
+    "arrival_date",
+    "departure_date",
+    "nights",
+    "reservation_status",
+    "create_datetime",
+    "cancellation_datetime",
+    "guest_country",
+    "is_block",
+    "is_walk_in",
+    "number_of_spaces",
+    "space_type",
+    "market_code",
+    "channel_code",
+    "source_name",
+    "rate_plan_code",
+    "commercial_rate_code",
+    "adr_room",
+    "lead_time",
+    "company_name",
+    "travel_agent_name",
 }
 
 _RENDER_WAIT_MS = 1800  # let client JS finish painting after navigation
@@ -230,7 +245,14 @@ if __name__ == "__main__":
     print("anchor_date     :", result["anchor_date"])
     print("dataset_revision:", result["dataset_revision"])
     print("declared_total  :", result["declared_total"])
-    print("ids scraped     :", len(result["reservation_ids"]), "->", result["reservation_ids"][:3], "...", result["reservation_ids"][-3:])
+    print(
+        "ids scraped     :",
+        len(result["reservation_ids"]),
+        "->",
+        result["reservation_ids"][:3],
+        "...",
+        result["reservation_ids"][-3:],
+    )
     print("\nreference row counts:")
     for k, v in result["reference"].items():
         print(f"  {k:14s}: {len(v)} rows -> sample {v[0] if v else None}")
