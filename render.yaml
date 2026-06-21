@@ -1,0 +1,27 @@
+# Render Blueprint — one-click deploy of the Revenue Manager agent.
+# New > Blueprint in the Render dashboard, point at this repo, then fill the
+# secret env vars (marked sync:false) in the prompt.
+services:
+  - type: web
+    name: revenue-manager-agent
+    runtime: python
+    region: frankfurt            # near Neon eu-west-2 (London) for low DB latency
+    plan: free
+    buildCommand: pip install -r requirements-server.txt
+    startCommand: uvicorn agent.server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.6"          # Deep Agents needs Python >= 3.11
+      - key: LLM_PROVIDER
+        value: google
+      - key: GOOGLE_MODEL
+        value: gemini-2.5-flash-lite
+      - key: DATABASE_URL        # Neon connection string (?sslmode=require)
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: BASIC_AUTH_USER
+        sync: false
+      - key: BASIC_AUTH_PASSWORD
+        sync: false

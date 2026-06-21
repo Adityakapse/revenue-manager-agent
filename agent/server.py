@@ -52,10 +52,12 @@ def require_auth(credentials: HTTPBasicCredentials = Depends(security)) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# Health — reflects the LIVE database, to be compared with the submitted LOAD_PROOF
+# Health — PUBLIC (no auth): reflects the LIVE database, compared with the submitted
+# LOAD_PROOF. Public so the platform health-check and the reviewer can call it; it exposes
+# only the DB fingerprint (no secrets) and never touches the LLM, so it can't be abused.
 # --------------------------------------------------------------------------- #
 @app.get("/health")
-def health(_user: str = Depends(require_auth)) -> dict:
+def health() -> dict:
     from scripts.compute_load_fingerprint import (
         DEFAULT_DATABASE_URL,
         connect,
