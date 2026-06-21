@@ -7,8 +7,8 @@ Comprehension attestation for the Revenue Manager Agent build challenge.
 ## Candidate
 
 - Name: Aditya Kapse
-- Repository URL: <fill in once pushed, e.g. https://github.com/adityakapse/revenue-manager-agent>
-- Date: 2026-06-15
+- Repository URL: https://github.com/Adityakapse/revenue-manager-agent
+- Date: 2026-06-21
 
 ---
 

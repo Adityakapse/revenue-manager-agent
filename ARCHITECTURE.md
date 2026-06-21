@@ -43,14 +43,19 @@ cannot improvise SQL.
 
 | Building block | Our use |
 |----------------|---------|
-| Model | Groq `llama-3.3-70b-versatile` (free), temperature 0 |
+| Model | Provider-configurable via `LLM_PROVIDER` — deployed on **Google Gemini** (`gemini-2.5-flash-lite`, free, generous limits); Groq also supported. Temperature 0. |
 | Tools | the five named tools — no `run_sql` |
 | Skills | `skills/` (7 `SKILL.md`, progressive disclosure) |
 | Subagent | **`segment-analyst`** — only `get_segment_mix` + `get_block_vs_transient_mix` (isolation) |
 | Planning | built-in `write_todos` (decompose multi-part GM questions) |
 | Memory / filesystem | `FilesystemBackend` + checkpointer + store (multi-turn) |
 | Human-in-the-loop | `interrupt_on={"get_as_of_otb": True}` (expensive point-in-time rebuild) |
-| System prompt | sharp revenue-manager persona (`prompts.py`) |
+| System prompt | sharp revenue-manager persona (`prompts.py`) + a **date context** |
+
+The system prompt injects a **date context** (the anchor date from `SCRAPE_MANIFEST.json`) so the
+model resolves relative dates ("this month", "recently") against the book's "today"
+(`2026-06-15`) instead of guessing — LLMs have no clock. `get_pickup_delta` likewise anchors its
+"now" to the latest booking timestamp, so pace stays correct for a static snapshot.
 
 ## 5. Skill → tool routing matrix
 
@@ -77,14 +82,25 @@ cannot improvise SQL.
 
 ## 7. Deployment topology
 
-- **DB:** hosted Postgres (Neon), loaded once by the ETL.
-- **Agent:** Deep Agent served on LangGraph; `agent/server.py` adds `GET /health` + HTTP basic auth.
-- **UI:** Agent Chat UI (streams tool/skill calls; loading a skill is a `read_file` tool call).
-- **`GET /health`** → `db_fingerprint` (= `reservation_stay_status_sha256`), `dataset_revision`,
-  `row_hash` (= `load_manifest.row_hash`), `financial_status_posted_only_rows` (= LOAD_PROOF
-  `posted_stay_rows`). API keys via env only — never committed.
+Deployed as **one self-contained FastAPI service** (`agent/server.py`) — the simplest path that
+meets every Phase-4 requirement:
+
+- **DB:** hosted Postgres on **Neon** (eu-west-2), loaded once via `scripts/load_neon_http.py`
+  over Neon's **HTTPS SQL endpoint** (port 5432 is firewalled on many networks); the load
+  reconciles to `LOAD_PROOF.json`. The deployed service reaches Neon over 5432 (cloud-to-cloud).
+- **Service:** `uvicorn agent.server:app` on **Render** (`render.yaml` blueprint, EU region).
+  Secrets (`DATABASE_URL`, `GOOGLE_API_KEY`, basic-auth) are env-only — never committed.
+- **UI:** a built-in streaming chat (`GET /`) that renders every **tool call and skill load**
+  (a skill load is a `read_file` on a `SKILL.md`) plus the HITL **Approve** button — all behind
+  HTTP **basic auth** (`/`, `/chat`, `/resume`).
+- **`GET /health`** (public — for the platform health-check + reviewer reconciliation) →
+  `db_fingerprint` (= `reservation_stay_status_sha256`), `dataset_revision`,
+  `row_hash` (= `load_manifest.row_hash`), `financial_status_posted_only_rows`
+  (= LOAD_PROOF `posted_stay_rows`).
+- A **LangGraph** path also ships (`langgraph.json` → `make_graph`, with `server.py` merged for
+  `/health`) for teams preferring the Agent Chat UI; the self-contained service is what we deploy.
 
 ## 8. Out of scope (deliberate)
 
-No MCP servers (optional bonus); no daily ETL cron (anchor-day reproducibility is enough); UI is
-function-first, not styled.
+No MCP servers (optional bonus); no daily ETL cron (anchor-day reproducibility is enough). The
+LangGraph + Agent Chat UI deployment is provided as an alternative, not the primary path.
