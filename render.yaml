@@ -14,12 +14,12 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.6"          # Deep Agents needs Python >= 3.11
       - key: LLM_PROVIDER
-        value: google
-      - key: GOOGLE_MODEL
-        value: gemini-2.5-flash
+        value: groq
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
       - key: DATABASE_URL        # Neon connection string (?sslmode=require)
         sync: false
-      - key: GOOGLE_API_KEY
+      - key: GROQ_API_KEY
         sync: false
       - key: BASIC_AUTH_USER
         sync: false
