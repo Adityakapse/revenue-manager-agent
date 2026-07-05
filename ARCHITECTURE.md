@@ -43,7 +43,7 @@ cannot improvise SQL.
 
 | Building block | Our use |
 |----------------|---------|
-| Model | Provider-configurable via `LLM_PROVIDER` — deployed on **Google Gemini** (`gemini-2.5-flash-lite`, free, generous limits); Groq also supported. Temperature 0. |
+| Model | Provider-configurable via `LLM_PROVIDER` — deployed on **Google Gemini** (`gemini-2.5-flash`, free, generous limits); Groq also supported. Temperature 0. |
 | Tools | the five named tools — no `run_sql` |
 | Skills | `skills/` (7 `SKILL.md`, progressive disclosure) |
 | Subagent | **`segment-analyst`** — only `get_segment_mix` + `get_block_vs_transient_mix` (isolation) |
