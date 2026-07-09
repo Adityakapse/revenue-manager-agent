@@ -89,10 +89,9 @@ def default_model():
     if provider in ("google", "gemini", "google_genai"):
         from langchain_google_genai import ChatGoogleGenerativeAI
 
-        # gemini-flash-latest is an alias that tracks the current flash model, so it does not
-        # 404 when Google rotates versions. max_retries rides out transient 503 overloads.
+        # Model comes from GOOGLE_MODEL; max_retries rides out transient 503 overloads.
         return ChatGoogleGenerativeAI(
-            model=os.environ.get("GOOGLE_MODEL", "gemini-flash-latest"),
+            model=os.environ.get("GOOGLE_MODEL", "gemini-2.5-flash"),
             temperature=0,
             max_retries=4,
         )
